@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using Bicep.Core.Diagnostics;
 
 namespace avm_lint;
 
@@ -56,21 +57,68 @@ internal sealed class Program
         try
         {
             var files = FilesFinder.GetFiles(source, recursive, filter);
-
-            foreach (var file in files)
-            {
-                Console.WriteLine(file);
-            }
-
+            AnalyzeAndPrint(files);
             return 0;
         }
         catch (Exception e)
         {
-            var c = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine($"Internal error: {e.Message}");
-            Console.ForegroundColor = c;
+            ConsoleError_Error($"Internal error: {e.Message}");
             return 1;
         }
+    }
+
+    private static void AnalyzeAndPrint(List<string> files)
+    {
+        foreach (var filePath in files)
+        {
+            var findings = new Analyzer().Analyze(filePath);
+            if (findings.Count == 0)
+                ConsoleOut_OK(filePath);
+            else
+            {
+                var errors = findings.Where(f => f.Level == DiagnosticLevel.Error);
+                if (errors.Any())
+                    ConsoleOut_Error(filePath);
+                else
+                    ConsoleOut_Warning(filePath);
+
+                foreach (var finding in findings)
+                {
+                    var msg = $"{finding.Level}: {finding.Code} - {finding.Message}";
+                    if (finding.Level == DiagnosticLevel.Error)
+                        ConsoleOut_Error(msg, " => ");
+                    else
+                        ConsoleOut_Warning(msg, " => ");
+                }
+            }
+        }
+    }
+
+    private static void ConsoleError_Error(string message)
+    {
+        PrintMessageInternal(Console.Error, message, ConsoleColor.Red);
+    }
+
+    private static void ConsoleOut_Error(string message, string indent = "")
+    {
+        PrintMessageInternal(Console.Out, $"{indent}{message}", ConsoleColor.Red);
+    }
+
+    private static void ConsoleOut_Warning(string message, string indent = "")
+    {
+        PrintMessageInternal(Console.Out, $"{indent}{message}", ConsoleColor.Yellow);
+    }
+
+    private static void ConsoleOut_OK(string message, string indent = "")
+    {
+        PrintMessageInternal(Console.Out, $"{indent}{message}", ConsoleColor.Green);
+    }
+
+    private static void PrintMessageInternal(TextWriter tw, string message, ConsoleColor c)
+    {
+        var oldColor = Console.ForegroundColor;
+        Console.ForegroundColor = c;
+        tw.WriteLine(message);
+        Console.ForegroundColor = oldColor;
     }
 }
