@@ -6,6 +6,17 @@
     <RootNamespace>avm_lint</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>0.0.1</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Title>Azure Verified Modules Lint</Title>
+    <Description>This is a command-line application, similar to a linter, designed to ensure consistency for Azure Verified Modules.</Description>
+    <Copyright>Copyright (c) 2024 Jiri Binko. All rights reserved.</Copyright>
+    <RepositoryUrl>https://github.com/jbinko/avm-lint</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Bicep.Core" Version="0.31.92" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
 
 </Project>
