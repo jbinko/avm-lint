@@ -5,12 +5,6 @@ This is a command-line application, similar to a linter, designed to ensure cons
 ## Command Line Options
 
 ```bash
-avm-lint -?
-
-Description:
-  Azure Verified Modules Lint [Version 0.0.1.0]
-  Copyright (c) 2024 Jiri Binko. All rights reserved.
-
 Usage:
   avm-lint [options]
 
