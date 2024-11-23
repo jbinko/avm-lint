@@ -11,6 +11,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: avm-lint
+
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET 9.0.x
