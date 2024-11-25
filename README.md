@@ -4,28 +4,31 @@ This is a command-line application, similar to a linter, designed to ensure cons
 
 ## Command Line Options
 
-```bash
+```console
 Usage:
   avm-lint [options]
 
 Options:
-  --source <source> (REQUIRED)  Source file (Bicep) or directory that contains the Bicep files.
-  --recursive                   Search recursively for Bicep files within the specified directory and its subdirectories. [default: True]
-  --filter <filter>             The filter string is used to match the names of files, supporting wildcard characters (* and ?). [default: *main.bicep]
-  --version                     Show version information
-  -?, -h, --help                Show help and usage information
+  --path <path> (REQUIRED)     The Bicep file or directory to lint. If a directory is provided, all Bicep files within it are considered unless
+                               modified by other options.
+  --recursive                  Search recursively for files within the specified directory and its subdirectories. This is the default behavior.
+                               [default: True]
+  --file-filter <file-filter>  A wildcard pattern to select which files to lint. Supports standard wildcard characters such as `*` (matches any
+                               sequence of characters) and `?` (matches any single character). [default: *main.bicep]
+  --version                    Show version information
+  -?, -h, --help               Show help and usage information
 ```
 
-```bash
-avm-lint --source main.bicep
+```console
+avm-lint --path main.bicep
 
-avm-lint --source avm\res
+avm-lint --path avm\res
 
-avm-lint --source avm\res --recursive false
+avm-lint --path avm\res --recursive false
 
-avm-lint --source avm\res --filter *test.bicep
+avm-lint --path avm\res --file-filter *test.bicep
 
-avm-lint --source avm\res --recursive false --filter *test.bicep
+avm-lint --path avm\res --recursive false --file-filter *test.bicep
 ```
 
 ## Lint Rules

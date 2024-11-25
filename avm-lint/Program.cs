@@ -14,9 +14,9 @@ internal sealed class Program
     {
         int returnCode = 0;
 
-        var sourceOption = new Option<FileSystemInfo>(
-                    "--source",
-                    "Source file (Bicep) or directory that contains the Bicep files."
+        var pathOption = new Option<FileSystemInfo>(
+                    "--path",
+                    "The Bicep file or directory to lint. If a directory is provided, all Bicep files within it are considered unless modified by other options."
                 )
         {
             IsRequired = true,
@@ -24,39 +24,39 @@ internal sealed class Program
 
         var recursiveOption = new Option<bool>(
             "--recursive",
-            "Search recursively for Bicep files within the specified directory and its subdirectories."
+            "Search recursively for files within the specified directory and its subdirectories. This is the default behavior."
         );
         recursiveOption.SetDefaultValue(true);
 
-        var filterOption = new Option<string>(
-            "--filter",
-            "The filter string is used to match the names of files, supporting wildcard characters (* and ?)."
+        var fileFilterOption = new Option<string>(
+            "--file-filter",
+            "A wildcard pattern to select which files to lint. Supports standard wildcard characters such as `*` (matches any sequence of characters) and `?` (matches any single character)."
         );
-        filterOption.SetDefaultValue("*main.bicep");
+        fileFilterOption.SetDefaultValue("*main.bicep");
 
         var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         var rootCommand = new RootCommand($"Azure Verified Modules Lint [Version {ver}]\nCopyright (c) 2024 Jiri Binko. All rights reserved.")
         {
-            sourceOption,
+            pathOption,
             recursiveOption,
-            filterOption
+            fileFilterOption
         };
 
-        rootCommand.SetHandler((source, recursive, filter) =>
+        rootCommand.SetHandler((path, recursive, fileFilter) =>
         {
-            returnCode = ExecuteRootCommand(source, recursive, filter);
-        }, sourceOption, recursiveOption, filterOption);
+            returnCode = ExecuteRootCommand(path, recursive, fileFilter);
+        }, pathOption, recursiveOption, fileFilterOption);
 
         await rootCommand.InvokeAsync(args);
 
         return returnCode;
     }
 
-    private static int ExecuteRootCommand(FileSystemInfo source, bool recursive, string filter)
+    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter)
     {
         try
         {
-            var files = FilesFinder.GetFiles(source, recursive, filter);
+            var files = FilesFinder.GetFiles(path, recursive, fileFilter);
             AnalyzeAndPrint(files);
             return 0;
         }
