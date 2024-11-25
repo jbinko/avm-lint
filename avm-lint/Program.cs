@@ -34,31 +34,38 @@ internal sealed class Program
         );
         fileFilterOption.SetDefaultValue("*main.bicep");
 
+        var issueThresholdOption = new Option<UInt32>(
+            "--issue-threshold",
+            "Specifies the maximum number of issues (including errors and warnings) tolerated before terminating the linting process early."
+        );
+        issueThresholdOption.SetDefaultValue(0);
+
         var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         var rootCommand = new RootCommand($"Azure Verified Modules Lint [Version {ver}]\nCopyright (c) 2024 Jiri Binko. All rights reserved.")
         {
             pathOption,
             recursiveOption,
-            fileFilterOption
+            fileFilterOption,
+            issueThresholdOption
         };
 
-        rootCommand.SetHandler((path, recursive, fileFilter) =>
+        rootCommand.SetHandler((path, recursive, fileFilter, issueThreshold) =>
         {
-            returnCode = ExecuteRootCommand(path, recursive, fileFilter);
-        }, pathOption, recursiveOption, fileFilterOption);
+            returnCode = ExecuteRootCommand(path, recursive, fileFilter, issueThreshold);
+        }, pathOption, recursiveOption, fileFilterOption, issueThresholdOption);
 
         await rootCommand.InvokeAsync(args);
 
         return returnCode;
     }
 
-    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter)
+    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, UInt32 issueThreshold)
     {
         try
         {
             DateTime start = DateTime.Now;
             var files = FilesFinder.GetFiles(path, recursive, fileFilter);
-            AnalyzeAndPrint(files, start);
+            AnalyzeAndPrint(files, start, issueThreshold);
             return 0;
         }
         catch (Exception e)
@@ -68,12 +75,16 @@ internal sealed class Program
         }
     }
 
-    private static void AnalyzeAndPrint(List<string> files, DateTime start)
+    private static void AnalyzeAndPrint(List<string> files, DateTime start, UInt32 issueThreshold)
     {
+        bool issueThresholdReached = false;
         int errorCount = 0, warningCount = 0;
 
         foreach (var filePath in files)
         {
+            if (issueThresholdReached)
+                break;
+
             var findings = new Analyzer().Analyze(filePath);
             if (findings.Count == 0)
                 ConsoleOut_OK(filePath);
@@ -98,10 +109,22 @@ internal sealed class Program
                         warningCount++;
                         ConsoleOut_Warning(msg, " => ");
                     }
+
+                    if (issueThreshold != 0 && (errorCount + warningCount) >= issueThreshold)
+                    {
+                        issueThresholdReached = true;
+                        break;
+                    }
                 }
             }
         }
 
+        if (issueThresholdReached)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Issue threshold of {issueThreshold} reached. Terminating linting process early.");
+        }
+        
         Console.WriteLine();
         Console.WriteLine($"Linting completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.\nFound {errorCount} error(s), {warningCount} warning(s).");
     }

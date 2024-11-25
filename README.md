@@ -9,14 +9,16 @@ Usage:
   avm-lint [options]
 
 Options:
-  --path <path> (REQUIRED)     The Bicep file or directory to lint. If a directory is provided, all Bicep files within it are considered unless
-                               modified by other options.
-  --recursive                  Search recursively for files within the specified directory and its subdirectories. This is the default behavior.
-                               [default: True]
-  --file-filter <file-filter>  A wildcard pattern to select which files to lint. Supports standard wildcard characters such as `*` (matches any
-                               sequence of characters) and `?` (matches any single character). [default: *main.bicep]
-  --version                    Show version information
-  -?, -h, --help               Show help and usage information
+  --path <path> (REQUIRED)             The Bicep file or directory to lint. If a directory is provided, all Bicep files within it are considered unless
+                                       modified by other options.
+  --recursive                          Search recursively for files within the specified directory and its subdirectories. This is the default
+                                       behavior. [default: True]
+  --file-filter <file-filter>          A wildcard pattern to select which files to lint. Supports standard wildcard characters such as `*` (matches any
+                                       sequence of characters) and `?` (matches any single character). [default: *main.bicep]
+  --issue-threshold <issue-threshold>  Specifies the maximum number of issues (including errors and warnings) tolerated before terminating the linting
+                                       process early. [default: 0]
+  --version                            Show version information
+  -?, -h, --help                       Show help and usage information
 ```
 
 ```console
@@ -29,6 +31,8 @@ avm-lint --path avm\res --recursive false
 avm-lint --path avm\res --file-filter *test.bicep
 
 avm-lint --path avm\res --recursive false --file-filter *test.bicep
+
+avm-lint --path avm\res --issue-threshold 10
 ```
 
 ## Lint Rules
