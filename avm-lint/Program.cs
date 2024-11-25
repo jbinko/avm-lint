@@ -56,8 +56,9 @@ internal sealed class Program
     {
         try
         {
+            DateTime start = DateTime.Now;
             var files = FilesFinder.GetFiles(path, recursive, fileFilter);
-            AnalyzeAndPrint(files);
+            AnalyzeAndPrint(files, start);
             return 0;
         }
         catch (Exception e)
@@ -67,8 +68,10 @@ internal sealed class Program
         }
     }
 
-    private static void AnalyzeAndPrint(List<string> files)
+    private static void AnalyzeAndPrint(List<string> files, DateTime start)
     {
+        int errorCount = 0, warningCount = 0;
+
         foreach (var filePath in files)
         {
             var findings = new Analyzer().Analyze(filePath);
@@ -86,12 +89,21 @@ internal sealed class Program
                 {
                     var msg = $"{finding.Level}: {finding.Code} - {finding.Message}";
                     if (finding.Level == DiagnosticLevel.Error)
+                    {
+                        errorCount++;
                         ConsoleOut_Error(msg, " => ");
+                    }
                     else
+                    {
+                        warningCount++;
                         ConsoleOut_Warning(msg, " => ");
+                    }
                 }
             }
         }
+
+        Console.WriteLine();
+        Console.WriteLine($"Linting completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.\nFound {errorCount} error(s), {warningCount} warning(s).");
     }
 
     private static void ConsoleError_Error(string message)
