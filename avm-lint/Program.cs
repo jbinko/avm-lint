@@ -1,4 +1,6 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Parsing;
+
 using Bicep.Core.Diagnostics;
 
 namespace avm_lint;
@@ -13,6 +15,7 @@ internal sealed class Program
     private static async Task<int> ExecuteCommandsAsync(string[] args)
     {
         int returnCode = 0;
+        var analyzeRules = new AnalyzeRules();
 
         var pathOption = new Option<FileSystemInfo>(
                     "--path",
@@ -34,11 +37,33 @@ internal sealed class Program
         );
         fileFilterOption.SetDefaultValue("*main.bicep");
 
+        var onlyRulesOption = new Option<IEnumerable<string>>(
+            "--only-rules",
+            "Specifies a list of rule IDs to restrict linting checks exclusively to the specified rules, excluding all other rules. The rules can be provided as a space-separated."
+        )
+        { AllowMultipleArgumentsPerToken = true };
+
+        onlyRulesOption.AddValidator(option =>
+        {
+            ValidateExistingRules(option, () => analyzeRules.SetOnlyRules(option.Tokens.Select(t => t.Value).ToList()));
+        });
+
+        var excludeRulesOption = new Option<IEnumerable<string>>(
+            "--exclude-rules",
+            "Excludes specific rules from the linting process. All other rules that are not mentioned will be included by default in the linting process. Specify rule IDs as a space-separated list to exempt them from checks."
+        )
+        { AllowMultipleArgumentsPerToken = true };
+
+        excludeRulesOption.AddValidator(option =>
+        {
+            ValidateExistingRules(option, () => analyzeRules.SetExcludeRules(option.Tokens.Select(t => t.Value).ToList()));
+        });
+
         var issueThresholdOption = new Option<UInt32>(
             "--issue-threshold",
             "Specifies the maximum number of issues (including errors and warnings) tolerated before terminating the linting process early."
         );
-        issueThresholdOption.SetDefaultValue(0);
+        // issueThresholdOption.SetDefaultValue(0); // It will be 0 by default and it will not be mentioned in the help
 
         var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         var rootCommand = new RootCommand($"Azure Verified Modules Lint [Version {ver}]\nCopyright (c) 2024 Jiri Binko. All rights reserved.")
@@ -46,12 +71,14 @@ internal sealed class Program
             pathOption,
             recursiveOption,
             fileFilterOption,
+            onlyRulesOption,
+            excludeRulesOption,
             issueThresholdOption
         };
 
         rootCommand.SetHandler((path, recursive, fileFilter, issueThreshold) =>
         {
-            returnCode = ExecuteRootCommand(path, recursive, fileFilter, issueThreshold);
+            returnCode = ExecuteRootCommand(path, recursive, fileFilter, analyzeRules, issueThreshold);
         }, pathOption, recursiveOption, fileFilterOption, issueThresholdOption);
 
         await rootCommand.InvokeAsync(args);
@@ -59,13 +86,21 @@ internal sealed class Program
         return returnCode;
     }
 
-    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, UInt32 issueThreshold)
+    private static void ValidateExistingRules(OptionResult option, Func<string> rulesFunction)
+    {
+        var errorMessage = rulesFunction.Invoke();
+
+        if (!String.IsNullOrWhiteSpace(errorMessage))
+            option.ErrorMessage = $"One or more specified rules: {errorMessage} do not exist.\nEnsure you are using a space as the separator.";
+    }
+
+    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, AnalyzeRules analyzeRules, UInt32 issueThreshold)
     {
         try
         {
             DateTime start = DateTime.Now;
             var files = FilesFinder.GetFiles(path, recursive, fileFilter);
-            AnalyzeAndPrint(files, start, issueThreshold);
+            AnalyzeAndPrint(files, analyzeRules, start, issueThreshold);
             return 0;
         }
         catch (Exception e)
@@ -75,7 +110,7 @@ internal sealed class Program
         }
     }
 
-    private static void AnalyzeAndPrint(List<string> files, DateTime start, UInt32 issueThreshold)
+    private static void AnalyzeAndPrint(List<string> files, AnalyzeRules analyzeRules, DateTime start, UInt32 issueThreshold)
     {
         bool issueThresholdReached = false;
         int errorCount = 0, warningCount = 0;
@@ -85,7 +120,7 @@ internal sealed class Program
             if (issueThresholdReached)
                 break;
 
-            var findings = new Analyzer().Analyze(filePath);
+            var findings = new Analyzer().Analyze(filePath, analyzeRules);
             if (findings.Count == 0)
                 ConsoleOut_OK(filePath);
             else
@@ -126,7 +161,7 @@ internal sealed class Program
         }
         
         Console.WriteLine();
-        Console.WriteLine($"Linting completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.\nFound {errorCount} error(s), {warningCount} warning(s).");
+        Console.WriteLine($"Linting for {analyzeRules.ActiveRulesCount} active rule(s) completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.\nFound {errorCount} error(s), {warningCount} warning(s).");
     }
 
     private static void ConsoleError_Error(string message)
