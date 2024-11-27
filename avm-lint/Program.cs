@@ -5,6 +5,48 @@ using Bicep.Core.Diagnostics;
 
 namespace avm_lint;
 
+internal sealed class ParseRuleIDs
+{
+    public AnalyzeRules AnalyzeRules = new AnalyzeRules();
+
+    public List<string> ParseOnlyRulesIDs(ArgumentResult arg)
+    {
+        return ParseAndValidate(arg, (rules) => { return AnalyzeRules.SetOnlyRules(rules); });
+    }
+
+    public List<string> ParseExcludeRulesIDs(ArgumentResult arg)
+    {
+        return ParseAndValidate(arg, (rules) => { return AnalyzeRules.SetExcludeRules(rules); });
+    }
+
+    private List<string> ParseAndValidate(ArgumentResult arg, Func<List<string>, string> setRulesAction)
+    {
+        var ruleIDs = new List<string>();
+        foreach (var token in arg.Tokens)
+        {
+            if (String.IsNullOrWhiteSpace(token.Value))
+                continue;
+
+            var tokenItems = token.Value.Split(",");
+            foreach (var tokenItem in tokenItems)
+            {
+                var tokenItemValue = tokenItem.Trim();
+                if (String.IsNullOrWhiteSpace(tokenItemValue))
+                    continue;
+
+                ruleIDs.Add(tokenItemValue);
+            }
+        }
+
+        var errorMessage = setRulesAction.Invoke(ruleIDs);
+
+        if (!String.IsNullOrWhiteSpace(errorMessage))
+            arg.ErrorMessage = $"One or more specified rules: {errorMessage} do not exist.";
+
+        return ruleIDs;
+    }
+}
+
 internal sealed class Program
 {
     static async Task<int> Main(string[] args)
@@ -15,12 +57,12 @@ internal sealed class Program
     private static async Task<int> ExecuteCommandsAsync(string[] args)
     {
         int returnCode = 0;
-        var analyzeRules = new AnalyzeRules();
+        var parseRuleIDs = new ParseRuleIDs();
 
         var pathOption = new Option<FileSystemInfo>(
-                    "--path",
-                    "The Bicep file or directory to lint. If a directory is provided, all Bicep files within it are considered unless modified by other options."
-                )
+            "--path",
+            "The Bicep file or directory to lint. If a directory is provided, all Bicep files within it are considered unless modified by other options."
+        )
         {
             IsRequired = true,
         }.ExistingOnly();
@@ -38,26 +80,18 @@ internal sealed class Program
         fileFilterOption.SetDefaultValue("*main.bicep");
 
         var onlyRulesOption = new Option<IEnumerable<string>>(
-            "--only-rules",
-            "Specifies a list of rule IDs to restrict linting checks exclusively to the specified rules, excluding all other rules. The rules can be provided as a space-separated."
+            name: "--only-rules",
+            description: "Specifies a list of rule IDs to restrict linting checks exclusively to the specified rules, excluding all other rules. The rules can be provided as a comma-separated.",
+            parseArgument: parseRuleIDs.ParseOnlyRulesIDs
         )
         { AllowMultipleArgumentsPerToken = true };
-
-        onlyRulesOption.AddValidator(option =>
-        {
-            ValidateExistingRules(option, () => analyzeRules.SetOnlyRules(option.Tokens.Select(t => t.Value).ToList()));
-        });
 
         var excludeRulesOption = new Option<IEnumerable<string>>(
-            "--exclude-rules",
-            "Excludes specific rules from the linting process. All other rules that are not mentioned will be included by default in the linting process. Specify rule IDs as a space-separated list to exempt them from checks."
+            name: "--exclude-rules",
+            description: "Excludes specific rules from the linting process. All other rules that are not mentioned will be included by default in the linting process. Specify rule IDs as a comma-separated list to exempt them from checks.",
+            parseArgument: parseRuleIDs.ParseExcludeRulesIDs
         )
         { AllowMultipleArgumentsPerToken = true };
-
-        excludeRulesOption.AddValidator(option =>
-        {
-            ValidateExistingRules(option, () => analyzeRules.SetExcludeRules(option.Tokens.Select(t => t.Value).ToList()));
-        });
 
         var issueThresholdOption = new Option<UInt32>(
             "--issue-threshold",
@@ -78,20 +112,12 @@ internal sealed class Program
 
         rootCommand.SetHandler((path, recursive, fileFilter, issueThreshold) =>
         {
-            returnCode = ExecuteRootCommand(path, recursive, fileFilter, analyzeRules, issueThreshold);
+            returnCode = ExecuteRootCommand(path, recursive, fileFilter, parseRuleIDs.AnalyzeRules, issueThreshold);
         }, pathOption, recursiveOption, fileFilterOption, issueThresholdOption);
 
         await rootCommand.InvokeAsync(args);
 
         return returnCode;
-    }
-
-    private static void ValidateExistingRules(OptionResult option, Func<string> rulesFunction)
-    {
-        var errorMessage = rulesFunction.Invoke();
-
-        if (!String.IsNullOrWhiteSpace(errorMessage))
-            option.ErrorMessage = $"One or more specified rules: {errorMessage} do not exist.\nEnsure you are using a space as the separator.";
     }
 
     private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, AnalyzeRules analyzeRules, UInt32 issueThreshold)
