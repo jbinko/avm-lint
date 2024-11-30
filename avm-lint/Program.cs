@@ -3,7 +3,6 @@ using System.CommandLine.Parsing;
 
 using Bicep.Core.Diagnostics;
 
-
 internal sealed class Program
 {
     static async Task<int> Main(string[] args)
@@ -13,7 +12,6 @@ internal sealed class Program
 
     private static async Task<int> ExecuteCommandsAsync(string[] args)
     {
-        int returnCode = 0;
         var parseRuleIDs = new ParseRuleIDs();
 
         var pathOption = new Option<FileSystemInfo>(
@@ -50,11 +48,10 @@ internal sealed class Program
         )
         { AllowMultipleArgumentsPerToken = true };
 
-        var issueThresholdOption = new Option<UInt32>(
+        var issueThresholdOption = new Option<uint>(
             "--issue-threshold",
             "Specifies the maximum number of issues (including errors and warnings) tolerated before terminating the linting process early."
         );
-        // issueThresholdOption.SetDefaultValue(0); // It will be 0 by default and it will not be mentioned in the help
 
         var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         var rootCommand = new RootCommand($"Azure Verified Modules Lint [Version {ver}]\nCopyright (c) 2024 Jiri Binko. All rights reserved.")
@@ -67,52 +64,59 @@ internal sealed class Program
             issueThresholdOption
         };
 
+        int returnCode = 0;
         rootCommand.SetHandler((path, recursive, fileFilter, issueThreshold) =>
         {
             returnCode = ExecuteRootCommand(path, recursive, fileFilter, parseRuleIDs.AnalyzeRules, issueThreshold);
         }, pathOption, recursiveOption, fileFilterOption, issueThresholdOption);
 
         await rootCommand.InvokeAsync(args);
-
         return returnCode;
     }
 
-    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, IAnalyzeRules analyzeRules, UInt32 issueThreshold)
+    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, IAnalyzeRules analyzeRules, uint issueThreshold)
     {
         try
         {
-            DateTime start = DateTime.Now;
+            var start = DateTime.Now;
             var files = FilesFinder.GetFiles(path, recursive, fileFilter);
             AnalyzeAndPrint(files, analyzeRules, start, issueThreshold);
             return 0;
         }
         catch (Exception e)
         {
-            ConsoleError_Error($"Internal error: {e.Message}");
+            PrintMessage(Console.Error, $"Internal error: {e.Message}", ConsoleColor.Red);
             return 1;
         }
     }
 
-    private static void AnalyzeAndPrint(List<string> files, IAnalyzeRules analyzeRules, DateTime start, UInt32 issueThreshold)
+    private static void AnalyzeAndPrint(List<string> files, IAnalyzeRules analyzeRules, DateTime start, uint issueThreshold)
     {
-        bool issueThresholdReached = false;
-        int errorCount = 0, warningCount = 0;
+        var errorCount = 0;
+        var warningCount = 0;
+        var issueThresholdReached = false;
 
         foreach (var filePath in files)
         {
             if (issueThresholdReached)
                 break;
 
-            var findings = new Analyzer().Analyze(filePath, analyzeRules);
+            var findings = Analyzer.Analyze(filePath, analyzeRules);
             if (findings.Count == 0)
-                ConsoleOut_OK(filePath);
+            {
+                PrintMessage(Console.Out, filePath, ConsoleColor.Green);
+            }
             else
             {
                 var errors = findings.Where(f => f.Level == DiagnosticLevel.Error);
                 if (errors.Any())
-                    ConsoleOut_Error(filePath);
+                {
+                    PrintMessage(Console.Out, filePath, ConsoleColor.Red);
+                }
                 else
-                    ConsoleOut_Warning(filePath);
+                {
+                    PrintMessage(Console.Out, filePath, ConsoleColor.Yellow);
+                }
 
                 foreach (var finding in findings)
                 {
@@ -120,12 +124,12 @@ internal sealed class Program
                     if (finding.Level == DiagnosticLevel.Error)
                     {
                         errorCount++;
-                        ConsoleOut_Error(msg, " => ");
+                        PrintMessage(Console.Out, msg, ConsoleColor.Red, " => ");
                     }
                     else
                     {
                         warningCount++;
-                        ConsoleOut_Warning(msg, " => ");
+                        PrintMessage(Console.Out, msg, ConsoleColor.Yellow, " => ");
                     }
 
                     if (issueThreshold != 0 && (errorCount + warningCount) >= issueThreshold)
@@ -142,36 +146,17 @@ internal sealed class Program
             Console.WriteLine();
             Console.WriteLine($"Issue threshold of {issueThreshold} reached. Terminating linting process early.");
         }
-        
+
         Console.WriteLine();
-        Console.WriteLine($"Linting for {analyzeRules.ActiveRulesCount} active rule(s) completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.\nFound {errorCount} error(s), {warningCount} warning(s).");
+        Console.WriteLine($"Linting for {analyzeRules.ActiveRulesCount} active rule(s) completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.");
+        Console.WriteLine($"Found {errorCount} error(s), {warningCount} warning(s).");
     }
 
-    private static void ConsoleError_Error(string message)
-    {
-        PrintMessageInternal(Console.Error, message, ConsoleColor.Red);
-    }
-
-    private static void ConsoleOut_Error(string message, string indent = "")
-    {
-        PrintMessageInternal(Console.Out, $"{indent}{message}", ConsoleColor.Red);
-    }
-
-    private static void ConsoleOut_Warning(string message, string indent = "")
-    {
-        PrintMessageInternal(Console.Out, $"{indent}{message}", ConsoleColor.Yellow);
-    }
-
-    private static void ConsoleOut_OK(string message, string indent = "")
-    {
-        PrintMessageInternal(Console.Out, $"{indent}{message}", ConsoleColor.Green);
-    }
-
-    private static void PrintMessageInternal(TextWriter tw, string message, ConsoleColor c)
+    private static void PrintMessage(TextWriter tw, string message, ConsoleColor color, string indent = "")
     {
         var oldColor = Console.ForegroundColor;
-        Console.ForegroundColor = c;
-        tw.WriteLine(message);
+        Console.ForegroundColor = color;
+        tw.WriteLine($"{indent}{message}");
         Console.ForegroundColor = oldColor;
     }
 }

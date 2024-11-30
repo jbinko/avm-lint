@@ -3,7 +3,7 @@ using Bicep.Core.Diagnostics;
 
 internal sealed class Analyzer
 {
-    public List<IDiagnostic> Analyze(string filePath, IAnalyzeRules analyzeRules)
+    public static List<IDiagnostic> Analyze(string filePath, IAnalyzeRules analyzeRules)
     {
         var bicepCodeText = File.ReadAllText(filePath);
         var parser = new Parser(bicepCodeText);
