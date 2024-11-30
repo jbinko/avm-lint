@@ -9,19 +9,19 @@ internal sealed class Analyzer
     {
         var bicepCodeText = File.ReadAllText(filePath);
         var parser = new Parser(bicepCodeText);
-        var lexingErrors = new List<IDiagnostic>(parser.LexingErrorLookup);
-        var parsingErrors = new List<IDiagnostic>(parser.ParsingErrorLookup);
-        var analyzingErrors = analyzeRules.Analyze(new LintVisitor().GetDeclarations(parser));
 
+        // Collect lexing errors
+        var lexingErrors = new List<IDiagnostic>(parser.LexingErrorLookup);
         if (lexingErrors.Count > 0)
             return lexingErrors;
 
+        // Collect parsing errors
+        var parsingErrors = new List<IDiagnostic>(parser.ParsingErrorLookup);
         if (parsingErrors.Count > 0)
             return parsingErrors;
 
-        if (analyzingErrors.Count > 0)
-            return analyzingErrors;
-
+        // Collect analyzing errors
+        var analyzingErrors = analyzeRules.Analyze(new LintVisitor().GetDeclarations(parser));
         return analyzingErrors;
     }
 }

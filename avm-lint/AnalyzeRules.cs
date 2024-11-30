@@ -12,17 +12,20 @@ internal sealed class AnalyzeRules
         public required Action<List<SyntaxBase>, List<IDiagnostic>> RuleAction { get; set; }
     }
 
-    private Dictionary<string, AnalyzeRuleDefinition> Rules { get; } = new Dictionary<string, AnalyzeRuleDefinition>() {
-        {"AVM001", new AnalyzeRuleDefinition { RuleAction = AnalyzeRule001 } },
-        {"AVM002", new AnalyzeRuleDefinition { RuleAction = AnalyzeRule002 } },
-        {"AVM003", new AnalyzeRuleDefinition { RuleAction = AnalyzeRule003 } },
+    private Dictionary<string, AnalyzeRuleDefinition> Rules { get; } = new()
+    {
+        { "AVM001", new AnalyzeRuleDefinition { RuleAction = AnalyzeRule001 } },
+        { "AVM002", new AnalyzeRuleDefinition { RuleAction = AnalyzeRule002 } },
+        { "AVM003", new AnalyzeRuleDefinition { RuleAction = AnalyzeRule003 } },
     };
 
     public string SetOnlyRules(List<string> rules)
     {
-        // Let's disable all rules first
+        // Disable all rules first
         foreach (var rule in Rules)
+        {
             rule.Value.Execute = false;
+        }
 
         return SetExecuteForSpecificRules(rules, true);
     }
@@ -38,33 +41,41 @@ internal sealed class AnalyzeRules
         foreach (var rule in rules)
         {
             if (Rules.TryGetValue(rule, out var ruleDefinition))
+            {
                 ruleDefinition.Execute = execute;
+            }
             else
+            {
                 invalidRules.Add(rule);
+            }
         }
 
-        return string.Join(",", invalidRules.Select(v => { return $"'{v}'"; }));
+        return string.Join(",", invalidRules.Select(v => $"'{v}'"));
     }
 
     public List<IDiagnostic> Analyze(List<SyntaxBase> declarations)
     {
-        List<IDiagnostic> diagnostics = new();
+        var diagnostics = new List<IDiagnostic>();
 
         foreach (var rule in Rules)
         {
             if (rule.Value.Execute)
+            {
                 rule.Value.RuleAction(declarations, diagnostics);
+            }
         }
 
         return diagnostics;
     }
 
-    public int ActiveRulesCount { get { return Rules.Values.Where(x => x.Execute == true).Count(); } }
+    public int ActiveRulesCount => Rules.Values.Count(x => x.Execute);
 
     private static IDiagnostic CreateDiagnostic(DiagnosticLevel level, string code, string message, string? value)
     {
-        if (!String.IsNullOrWhiteSpace(value))
+        if (!string.IsNullOrWhiteSpace(value))
+        {
             message = $"Invalid Value: '{value}'. {message}";
+        }
         return new Diagnostic(TextSpan.Nil, level, DiagnosticSource.CoreLinter, code, message);
     }
 

@@ -3,19 +3,19 @@ using Bicep.Core.Parsing;
 
 namespace avm_lint;
 
-internal sealed class LintVisitor : AstVisitor // CstVisitor
+internal sealed class LintVisitor : AstVisitor
 {
+    private List<SyntaxBase> _declarations = new();
+
     public List<SyntaxBase> GetDeclarations(Parser parser)
     {
-        base.Visit(parser.Program());
+        Visit(parser.Program());
         return _declarations;
     }
 
     public override void VisitProgramSyntax(ProgramSyntax syntax)
     {
         base.VisitProgramSyntax(syntax);
-        _declarations = new(syntax.Declarations);
+        _declarations = new List<SyntaxBase>(syntax.Declarations);
     }
-
-    private List<SyntaxBase> _declarations = new();
 }

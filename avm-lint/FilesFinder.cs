@@ -4,15 +4,12 @@ internal sealed class FilesFinder
 {
     public static List<string> GetFiles(FileSystemInfo path, bool recursive, string filter)
     {
-        switch (path)
+        return path switch
         {
-            case FileInfo file:
-                return new List<string> { file.FullName };
-            case DirectoryInfo directory:
-                return GetFiles(directory.FullName, recursive, filter);
-        }
-
-        throw new InvalidOperationException($"Not supported FileSystemInfo: '{path.GetType().Name}'.");
+            FileInfo file => new List<string> { file.FullName },
+            DirectoryInfo directory => GetFiles(directory.FullName, recursive, filter),
+            _ => throw new InvalidOperationException($"Not supported FileSystemInfo: '{path.GetType().Name}'.")
+        };
     }
 
     private static List<string> GetFiles(string directoryPath, bool recursive, string filter)
@@ -25,8 +22,7 @@ internal sealed class FilesFinder
     private static void GetFilesRecursive(string directoryPath, bool recursive, string filter, ref List<string> fileNamesList)
     {
         var files = Directory.GetFiles(directoryPath, filter);
-        foreach (var file in files)
-            fileNamesList.Add(file);
+        fileNamesList.AddRange(files);
 
         if (recursive)
         {

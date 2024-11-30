@@ -11,12 +11,12 @@ internal sealed class ParseRuleIDs
 
     public List<string> ParseOnlyRulesIDs(ArgumentResult arg)
     {
-        return ParseAndValidate(arg, (rules) => { return AnalyzeRules.SetOnlyRules(rules); });
+        return ParseAndValidate(arg, AnalyzeRules.SetOnlyRules);
     }
 
     public List<string> ParseExcludeRulesIDs(ArgumentResult arg)
     {
-        return ParseAndValidate(arg, (rules) => { return AnalyzeRules.SetExcludeRules(rules); });
+        return ParseAndValidate(arg, AnalyzeRules.SetExcludeRules);
     }
 
     private List<string> ParseAndValidate(ArgumentResult arg, Func<List<string>, string> setRulesAction)
