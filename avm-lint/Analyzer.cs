@@ -1,11 +1,9 @@
 ﻿using Bicep.Core.Parsing;
 using Bicep.Core.Diagnostics;
 
-namespace avm_lint;
-
 internal sealed class Analyzer
 {
-    public List<IDiagnostic> Analyze(string filePath, AnalyzeRules analyzeRules)
+    public List<IDiagnostic> Analyze(string filePath, IAnalyzeRules analyzeRules)
     {
         var bicepCodeText = File.ReadAllText(filePath);
         var parser = new Parser(bicepCodeText);

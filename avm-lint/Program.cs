@@ -3,49 +3,6 @@ using System.CommandLine.Parsing;
 
 using Bicep.Core.Diagnostics;
 
-namespace avm_lint;
-
-internal sealed class ParseRuleIDs
-{
-    public AnalyzeRules AnalyzeRules = new AnalyzeRules();
-
-    public List<string> ParseOnlyRulesIDs(ArgumentResult arg)
-    {
-        return ParseAndValidate(arg, AnalyzeRules.SetOnlyRules);
-    }
-
-    public List<string> ParseExcludeRulesIDs(ArgumentResult arg)
-    {
-        return ParseAndValidate(arg, AnalyzeRules.SetExcludeRules);
-    }
-
-    private List<string> ParseAndValidate(ArgumentResult arg, Func<List<string>, string> setRulesAction)
-    {
-        var ruleIDs = new List<string>();
-        foreach (var token in arg.Tokens)
-        {
-            if (String.IsNullOrWhiteSpace(token.Value))
-                continue;
-
-            var tokenItems = token.Value.Split(",");
-            foreach (var tokenItem in tokenItems)
-            {
-                var tokenItemValue = tokenItem.Trim();
-                if (String.IsNullOrWhiteSpace(tokenItemValue))
-                    continue;
-
-                ruleIDs.Add(tokenItemValue);
-            }
-        }
-
-        var errorMessage = setRulesAction.Invoke(ruleIDs);
-
-        if (!String.IsNullOrWhiteSpace(errorMessage))
-            arg.ErrorMessage = $"One or more specified rules: {errorMessage} do not exist.";
-
-        return ruleIDs;
-    }
-}
 
 internal sealed class Program
 {
@@ -120,7 +77,7 @@ internal sealed class Program
         return returnCode;
     }
 
-    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, AnalyzeRules analyzeRules, UInt32 issueThreshold)
+    private static int ExecuteRootCommand(FileSystemInfo path, bool recursive, string fileFilter, IAnalyzeRules analyzeRules, UInt32 issueThreshold)
     {
         try
         {
@@ -136,7 +93,7 @@ internal sealed class Program
         }
     }
 
-    private static void AnalyzeAndPrint(List<string> files, AnalyzeRules analyzeRules, DateTime start, UInt32 issueThreshold)
+    private static void AnalyzeAndPrint(List<string> files, IAnalyzeRules analyzeRules, DateTime start, UInt32 issueThreshold)
     {
         bool issueThresholdReached = false;
         int errorCount = 0, warningCount = 0;

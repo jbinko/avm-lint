@@ -1,6 +1,4 @@
-﻿namespace avm_lint;
-
-internal sealed class FilesFinder
+﻿internal sealed class FilesFinder
 {
     public static List<string> GetFiles(FileSystemInfo path, bool recursive, string filter)
     {

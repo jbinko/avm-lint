@@ -1,8 +1,6 @@
 ﻿using Bicep.Core.Syntax;
 using Bicep.Core.Parsing;
 
-namespace avm_lint;
-
 internal sealed class LintVisitor : AstVisitor
 {
     private List<SyntaxBase> _declarations = new();
