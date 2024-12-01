@@ -4,7 +4,7 @@ using PluralizeService.Core;
 
 internal sealed class AnalyzeRule001 : AnalyzeRuleBase, IAnalyzeRule
 {
-    public static string Code => "AVM001";
+    public string Code => "AVM001";
 
     public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {

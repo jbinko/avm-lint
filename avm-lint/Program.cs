@@ -148,7 +148,7 @@ internal sealed class Program
         }
 
         Console.WriteLine();
-        Console.WriteLine($"Linting for {analyzeRules.ActiveRulesCount} active rule(s) completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.");
+        Console.WriteLine($"Linting for {analyzeRules.ActiveRulesCount} active rule(s) out of {analyzeRules.TotalRulesCount} rules. Completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.");
         Console.WriteLine($"Found {errorCount} error(s), {warningCount} warning(s).");
     }
 

@@ -9,18 +9,18 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         public required IAnalyzeRule Rule { get; set; }
     }
 
-    private readonly Dictionary<string, AnalyzeRuleDefinition> _rules = new()
+    private readonly List<AnalyzeRuleDefinition> _rules = new()
     {
-        { AnalyzeRule001.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule001() } },
-        { AnalyzeRule002.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule002() } },
-        { AnalyzeRule003.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule003() } },
-        { AnalyzeRule004.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule004() } },
+        { new AnalyzeRuleDefinition { Rule = new AnalyzeRule001() } },
+        { new AnalyzeRuleDefinition { Rule = new AnalyzeRule002() } },
+        { new AnalyzeRuleDefinition { Rule = new AnalyzeRule003() } },
+        { new AnalyzeRuleDefinition { Rule = new AnalyzeRule004() } },
     };
 
     public string SetOnlyRules(List<string> rules)
     {
         // Disable all rules first
-        foreach (var rule in _rules.Values)
+        foreach (var rule in _rules)
         {
             rule.Execute = false;
         }
@@ -38,13 +38,14 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         var invalidRules = new List<string>();
         foreach (var rule in rules)
         {
-            if (_rules.TryGetValue(rule, out var ruleDefinition))
+            var ruleDefinition = _rules.FirstOrDefault(v => v.Rule.Code == rule);
+            if (ruleDefinition == null)
             {
-                ruleDefinition.Execute = execute;
+                invalidRules.Add(rule);
             }
             else
             {
-                invalidRules.Add(rule);
+                ruleDefinition.Execute = execute;
             }
         }
 
@@ -55,7 +56,7 @@ internal sealed class AnalyzeRules : IAnalyzeRules
     {
         var diagnostics = new List<IDiagnostic>();
 
-        foreach (var rule in _rules.Values)
+        foreach (var rule in _rules)
         {
             if (rule.Execute)
             {
@@ -66,5 +67,6 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         return diagnostics;
     }
 
-    public int ActiveRulesCount => _rules.Values.Count(x => x.Execute);
+    public int TotalRulesCount => _rules.Count;
+    public int ActiveRulesCount => _rules.Count(x => x.Execute);
 }
