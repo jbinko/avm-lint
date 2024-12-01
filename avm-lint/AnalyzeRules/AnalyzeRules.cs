@@ -11,9 +11,9 @@ internal sealed class AnalyzeRules : IAnalyzeRules
 
     private readonly Dictionary<string, AnalyzeRuleDefinition> _rules = new()
     {
-        { "AVM001", new AnalyzeRuleDefinition { Rule = new AnalyzeRule001() } },
-        { "AVM002", new AnalyzeRuleDefinition { Rule = new AnalyzeRule002() } },
-        { "AVM003", new AnalyzeRuleDefinition { Rule = new AnalyzeRule003() } },
+        { AnalyzeRule001.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule001() } },
+        { AnalyzeRule002.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule002() } },
+        { AnalyzeRule003.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule003() } },
     };
 
     public string SetOnlyRules(List<string> rules)

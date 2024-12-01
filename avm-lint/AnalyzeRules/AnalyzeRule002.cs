@@ -3,7 +3,7 @@ using Bicep.Core.Diagnostics;
 
 internal sealed class AnalyzeRule002 : IAnalyzeRule
 {
-    public string Code => "AVM002";
+    public static string Code => "AVM002";
 
     public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {

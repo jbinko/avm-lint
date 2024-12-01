@@ -3,6 +3,6 @@ using Bicep.Core.Diagnostics;
 
 internal interface IAnalyzeRule
 {
-    string Code { get; }
+    static string Code { get; } = "";
     void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics);
 }
