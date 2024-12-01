@@ -2,7 +2,7 @@
 using Bicep.Core.Diagnostics;
 using PluralizeService.Core;
 
-internal sealed class AnalyzeRule001 : IAnalyzeRule
+internal sealed class AnalyzeRule001 : AnalyzeRuleBase, IAnalyzeRule
 {
     public static string Code => "AVM001";
 
@@ -22,7 +22,7 @@ internal sealed class AnalyzeRule001 : IAnalyzeRule
 
         var decl = declarations[declarationNumber];
 
-        if (!IsValidMetadataDeclaration(decl, out var msgValue))
+        if (!IsValidMetadataDeclaration(decl, "name", out var msgValue))
         {
             AddDiagnostic(diagnostics, null);
             return;
@@ -32,21 +32,6 @@ internal sealed class AnalyzeRule001 : IAnalyzeRule
         {
             AddDiagnostic(diagnostics, msgValue);
         }
-    }
-
-    private bool IsValidMetadataDeclaration(SyntaxBase decl, out string msgValue)
-    {
-        msgValue = "";
-
-        if (decl is not MetadataDeclarationSyntax metadata ||
-            metadata.Name.IdentifierName != "name" ||
-            metadata.Value is not StringSyntax value)
-        {
-            return false;
-        }
-
-        msgValue = value.TryGetLiteralValue() ?? "";
-        return !string.IsNullOrWhiteSpace(msgValue);
     }
 
     private bool IsValidPluralForm(string msgValue)
