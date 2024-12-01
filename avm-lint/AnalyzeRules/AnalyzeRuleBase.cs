@@ -16,4 +16,18 @@ internal /*sealed*/ class AnalyzeRuleBase
         msgValue = value.TryGetLiteralValue() ?? "";
         return !string.IsNullOrWhiteSpace(msgValue);
     }
+
+    protected bool IsValidTargetScopeDeclaration(SyntaxBase decl, out string scopeValue)
+    {
+        scopeValue = "";
+
+        if (decl is not TargetScopeSyntax targetScope ||
+            targetScope.Value is not StringSyntax value)
+        {
+            return false;
+        }
+
+        scopeValue = value.TryGetLiteralValue() ?? "";
+        return !string.IsNullOrWhiteSpace(scopeValue);
+    }
 }

@@ -7,7 +7,7 @@ internal sealed class DiagnosticFactory
     {
         if (!string.IsNullOrWhiteSpace(value))
         {
-            message = $"Invalid Value: '{value}'. {message}";
+            message = $"Invalid value: '{value}'. {message}";
         }
 
         return new Diagnostic(TextSpan.Nil, level, DiagnosticSource.CoreLinter, code, message);

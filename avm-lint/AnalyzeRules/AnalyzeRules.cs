@@ -14,6 +14,7 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         { AnalyzeRule001.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule001() } },
         { AnalyzeRule002.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule002() } },
         { AnalyzeRule003.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule003() } },
+        { AnalyzeRule004.Code, new AnalyzeRuleDefinition { Rule = new AnalyzeRule004() } },
     };
 
     public string SetOnlyRules(List<string> rules)
