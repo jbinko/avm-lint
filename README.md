@@ -39,10 +39,19 @@ avm-lint --path avm\res --exclude-rules AVM001,AVM002,AVM003
 avm-lint --path avm\res --issue-threshold 10
 ```
 
+## Expected Bicep File Structure
+
+```bicep
+// First section expects metadata statements
+metadata name = 'Elastic SANs'                                  // 'name' - First metadata defined and it should be in plural form
+metadata description = 'This module deploys an Elastic SAN.'    // 'description' - Second metadata defined and must start with 'This module deploys a' followed by the name of the resource in singular form
+metadata owner = 'Azure/module-maintainers'                     // 'owner' - Third metadata defined with the value 'Azure/module-maintainers'
+```
+
 ## Lint Rules
 
 | Code   | Level | Message |
 |--------|-------|---------|
-| AVM001 | Error | The module name metadata must be specified first and should contain the value with the resource name in plural form. For example, 'Elastic SANs'. |
-| AVM002 | Error | The module description metadata must be specified second and must contain the value with the resource name in singular form, starting with the phrase 'This module deploys a'. For example, 'This module deploys an Elastic SAN'. |
-| AVM003 | Error | The module owner is not specified correctly. It must be specified as the third metadata statement with the value "metadata owner = 'Azure/module-maintainers'". |
+| AVM001 | Error | The 'name' metadata in the module should be the first metadata defined and it should be in plural form, for example, 'Elastic SANs'. |
+| AVM002 | Error | The 'description' metadata in the module should be the second metadata defined and must start with 'This module deploys a' followed by the name of the resource in singular form. For example 'This module deploys an Elastic SAN'. |
+| AVM003 | Error | The 'owner' metadata in the module should be the third metadata defined with the value 'Azure/module-maintainers'. |
