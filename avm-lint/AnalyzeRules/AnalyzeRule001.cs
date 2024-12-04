@@ -9,8 +9,8 @@ internal sealed class AnalyzeRule001 : AnalyzeRuleBase, IAnalyzeRule
     public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM001 | Error
-        // The 'name' metadata in the module should be the first metadata defined
-        // and it should be in plural form, for example, 'Elastic SANs'.
+        // The 'name' metadata in the module should be the first metadata defined (without any decorators)
+        // and must be in plural form, such as 'Elastic SANs'.
 
         const int declarationNumber = 0; // Must be 1st
 
@@ -45,7 +45,7 @@ internal sealed class AnalyzeRule001 : AnalyzeRuleBase, IAnalyzeRule
         diagnostics.Add(DiagnosticFactory.Create(
             DiagnosticLevel.Error,
             Code,
-            "The 'name' metadata in the module should be the first metadata defined and it should be in plural form, for example, 'Elastic SANs'.",
+            "The 'name' metadata in the module should be the first metadata defined (without any decorators) and must be in plural form, such as 'Elastic SANs'.",
             msgValue));
     }
 }

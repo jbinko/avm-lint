@@ -8,7 +8,7 @@ internal sealed class AnalyzeRule003 : AnalyzeRuleBase, IAnalyzeRule
     public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM003 | Error
-        // The 'owner' metadata in the module should be the third metadata defined
+        // The 'owner' metadata in the module should be the third metadata defined (without any decorators)
         // with the value 'Azure/module-maintainers'.
 
         const int declarationNumber = 2; // Must be 3rd
@@ -38,7 +38,7 @@ internal sealed class AnalyzeRule003 : AnalyzeRuleBase, IAnalyzeRule
         diagnostics.Add(DiagnosticFactory.Create(
             DiagnosticLevel.Error,
             Code,
-            "The 'owner' metadata in the module should be the third metadata defined with the value 'Azure/module-maintainers'.",
+            "The 'owner' metadata in the module should be the third metadata defined (without any decorators) with the value 'Azure/module-maintainers'.",
             msgValue));
     }
 }

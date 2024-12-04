@@ -8,9 +8,9 @@ internal sealed class AnalyzeRule004 : AnalyzeRuleBase, IAnalyzeRule
     public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM004 | Error
-        // The 'targetScope' can only be used with 'subscription', 'managementGroup', or 'tenant' value.
-        // It cannot be used with 'resourceGroup'. When 'targetScope' is specified,
-        // it must be the first statement following the metadata section.
+        // The 'targetScope' (without any decorators) can only be used with 'subscription', 'managementGroup', or 'tenant' value.
+        // It cannot be used with 'resourceGroup'. When 'targetScope' is specified, it must be
+        // the first statement following the metadata section.
 
         var targetScopeCount = declarations.Count(ts => ts is TargetScopeSyntax);
         if (targetScopeCount != 0 && targetScopeCount != 1) // It is optional but can be only one when specified
@@ -80,7 +80,7 @@ internal sealed class AnalyzeRule004 : AnalyzeRuleBase, IAnalyzeRule
         diagnostics.Add(DiagnosticFactory.Create(
             DiagnosticLevel.Error,
             Code,
-            "The 'targetScope' can only be used with 'subscription', 'managementGroup', or 'tenant' value. It cannot be used with 'resourceGroup'. When 'targetScope' is specified, it must be the first statement following the metadata section.",
+            "The 'targetScope' (without any decorators) can only be used with 'subscription', 'managementGroup', or 'tenant' value. It cannot be used with 'resourceGroup'. When 'targetScope' is specified, it must be the first statement following the metadata section.",
             msgValue));
     }
 }

@@ -51,13 +51,17 @@ avm-lint --path avm\res --issue-threshold 10
 Keep the order of the metadata statements as shown below. The `targetScope` statement is optional and can only be used with the values `subscription`, `managementGroup`, or `tenant`. The use of `resourceGroup` is not allowed.
 
 ```bicep
-// Define module metadata
+// Define required module metadata.
+// No decorators are expected for metadata.
 metadata name = 'Elastic SANs'                                  // Defines the module name. Ensure names are plural when appropriate.
 metadata description = 'This module deploys an Elastic SAN.'    // Provides a description of the module's functionality. Must start with 'This module deploys a' followed by the name of the resource in singular form.
 metadata owner = 'Azure/module-maintainers'                     // Specifies the owner of the module, using fixed value 'Azure/module-maintainers'.
 
-// If required - define deployment target scope
+// Additional metadata can be added here, if needed. But must be placed after the required metadata.
+
+// If needed - define deployment target scope
 // Possible targets include 'subscription', 'managementGroup', or 'tenant'. Do not use 'resourceGroup' value.
+// No decorators are expected for targetScope.
 targetScope = 'subscription'                                    // When specified, must be placed right after metadata entries.
 ```
 
@@ -65,7 +69,7 @@ targetScope = 'subscription'                                    // When specifie
 
 | Code   | Level | Message |
 |--------|-------|---------|
-| AVM001 | Error | The 'name' metadata in the module should be the first metadata defined and it should be in plural form, for example, 'Elastic SANs'. |
-| AVM002 | Error | The 'description' metadata in the module should be the second metadata defined and must start with 'This module deploys a' followed by the name of the resource in singular form. For example 'This module deploys an Elastic SAN'. |
-| AVM003 | Error | The 'owner' metadata in the module should be the third metadata defined with the value 'Azure/module-maintainers'. |
-| AVM004 | Error | The 'targetScope' can only be used with 'subscription', 'managementGroup', or 'tenant' value. It cannot be used with 'resourceGroup'. When 'targetScope' is specified, it must be the first statement following the metadata section. |
+| AVM001 | Error | The 'name' metadata in the module should be the first metadata defined (without any decorators) and must be in plural form, such as 'Elastic SANs'. |
+| AVM002 | Error | The 'description' metadata in the module should be the second metadata defined (without any decorators) and must start with 'This module deploys a' followed by the name of the resource in singular form. For example 'This module deploys an Elastic SAN'. |
+| AVM003 | Error | The 'owner' metadata in the module should be the third metadata defined (without any decorators) with the value 'Azure/module-maintainers'. |
+| AVM004 | Error | The 'targetScope' (without any decorators) can only be used with 'subscription', 'managementGroup', or 'tenant' value. It cannot be used with 'resourceGroup'. When 'targetScope' is specified, it must be the first statement following the metadata section. |

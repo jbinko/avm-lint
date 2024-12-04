@@ -9,7 +9,7 @@ internal sealed class AnalyzeRule002 : AnalyzeRuleBase, IAnalyzeRule
     public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM002 | Error
-        // The 'description' metadata in the module should be the second metadata defined
+        // The 'description' metadata in the module should be the second metadata defined (without any decorators)
         // and must start with 'This module deploys a' followed by the name of the resource
         // in singular form. For example 'This module deploys an Elastic SAN'.
 
@@ -52,7 +52,7 @@ internal sealed class AnalyzeRule002 : AnalyzeRuleBase, IAnalyzeRule
         diagnostics.Add(DiagnosticFactory.Create(
             DiagnosticLevel.Error,
             Code,
-            "The 'description' metadata in the module should be the second metadata defined and must start with 'This module deploys a' followed by the name of the resource in singular form. For example 'This module deploys an Elastic SAN'.",
+            "The 'description' metadata in the module should be the second metadata defined (without any decorators) and must start with 'This module deploys a' followed by the name of the resource in singular form. For example 'This module deploys an Elastic SAN'.",
             msgValue));
     }
 }

@@ -7,6 +7,7 @@ internal /*sealed*/ class AnalyzeRuleBase
         msgValue = "";
 
         if (decl is not MetadataDeclarationSyntax metadata ||
+            metadata.Decorators.Any() ||
             metadata.Name.IdentifierName != identifierName ||
             metadata.Value is not StringSyntax value)
         {
@@ -22,6 +23,7 @@ internal /*sealed*/ class AnalyzeRuleBase
         scopeValue = "";
 
         if (decl is not TargetScopeSyntax targetScope ||
+            targetScope.Decorators.Any() ||
             targetScope.Value is not StringSyntax value)
         {
             return false;
