@@ -5,17 +5,17 @@ internal sealed class AnalyzeRule004 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM004";
 
-    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context)
     {
         // AVM004 | Error
         // The 'targetScope' (without any decorators) can only be used with 'subscription', 'managementGroup', or 'tenant' value.
         // It cannot be used with 'resourceGroup'. When 'targetScope' is specified, it must be
         // the first statement following the metadata section.
 
-        var targetScopeCount = declarations.Count(ts => ts is TargetScopeSyntax);
+        var targetScopeCount = context.Declarations.Count(ts => ts is TargetScopeSyntax);
         if (targetScopeCount != 0 && targetScopeCount != 1) // It is optional but can be only one when specified
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
@@ -24,15 +24,15 @@ internal sealed class AnalyzeRule004 : AnalyzeRuleBase, IAnalyzeRule
             return;
         }
 
-        if (!TryGetTargetScopeAfterMetadata(declarations, out var targetScope))
+        if (!TryGetTargetScopeAfterMetadata(context.Declarations, out var targetScope))
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
         if (!IsValidTargetScopeDeclaration(targetScope!, out var targetScopeValue))
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
@@ -40,7 +40,7 @@ internal sealed class AnalyzeRule004 : AnalyzeRuleBase, IAnalyzeRule
         var allowedValues = new[] { "tenant", "managementGroup", "subscription" };
         if (!allowedValues.Any(targetScopeValue.Contains))
         {
-            AddDiagnostic(diagnostics, targetScopeValue);
+            AddDiagnostic(context.Diagnostics, targetScopeValue);
         }
     }
 

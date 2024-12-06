@@ -1,12 +1,11 @@
-﻿using Bicep.Core.Syntax;
-using Bicep.Core.Diagnostics;
+﻿using Bicep.Core.Diagnostics;
 using PluralizeService.Core;
 
 internal sealed class AnalyzeRule002 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM002";
 
-    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context)
     {
         // AVM002 | Error
         // The 'description' metadata in the module should be the second metadata defined (without any decorators)
@@ -15,29 +14,29 @@ internal sealed class AnalyzeRule002 : AnalyzeRuleBase, IAnalyzeRule
 
         const int declarationNumber = 1; // Must be 2nd
 
-        if (declarations.Count <= declarationNumber)
+        if (context.Declarations.Count <= declarationNumber)
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
-        var decl = declarations[declarationNumber];
+        var decl = context.Declarations[declarationNumber];
 
         if (!IsValidMetadataDeclaration(decl, "description", out var msgValue))
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
         if (!msgValue.StartsWith("This module deploys a"))
         {
-            AddDiagnostic(diagnostics, msgValue);
+            AddDiagnostic(context.Diagnostics, msgValue);
             return;
         }
 
         if (!IsValidSingularForm(msgValue))
         {
-            AddDiagnostic(diagnostics, msgValue);
+            AddDiagnostic(context.Diagnostics, msgValue);
         }
     }
 

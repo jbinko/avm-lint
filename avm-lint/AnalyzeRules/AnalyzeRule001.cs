@@ -1,12 +1,11 @@
-﻿using Bicep.Core.Syntax;
-using Bicep.Core.Diagnostics;
+﻿using Bicep.Core.Diagnostics;
 using PluralizeService.Core;
 
 internal sealed class AnalyzeRule001 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM001";
 
-    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context)
     {
         // AVM001 | Error
         // The 'name' metadata in the module should be the first metadata defined (without any decorators)
@@ -14,23 +13,23 @@ internal sealed class AnalyzeRule001 : AnalyzeRuleBase, IAnalyzeRule
 
         const int declarationNumber = 0; // Must be 1st
 
-        if (declarations.Count <= declarationNumber)
+        if (context.Declarations.Count <= declarationNumber)
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
-        var decl = declarations[declarationNumber];
+        var decl = context.Declarations[declarationNumber];
 
         if (!IsValidMetadataDeclaration(decl, "name", out var msgValue))
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
         if (!IsValidPluralForm(msgValue))
         {
-            AddDiagnostic(diagnostics, msgValue);
+            AddDiagnostic(context.Diagnostics, msgValue);
         }
     }
 

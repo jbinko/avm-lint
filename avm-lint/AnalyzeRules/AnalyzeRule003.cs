@@ -1,11 +1,10 @@
-﻿using Bicep.Core.Syntax;
-using Bicep.Core.Diagnostics;
+﻿using Bicep.Core.Diagnostics;
 
 internal sealed class AnalyzeRule003 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM003";
 
-    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context)
     {
         // AVM003 | Error
         // The 'owner' metadata in the module should be the third metadata defined (without any decorators)
@@ -13,23 +12,23 @@ internal sealed class AnalyzeRule003 : AnalyzeRuleBase, IAnalyzeRule
 
         const int declarationNumber = 2; // Must be 3rd
 
-        if (declarations.Count <= declarationNumber)
+        if (context.Declarations.Count <= declarationNumber)
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
-        var decl = declarations[declarationNumber];
+        var decl = context.Declarations[declarationNumber];
 
         if (!IsValidMetadataDeclaration(decl, "owner", out var msgValue))
         {
-            AddDiagnostic(diagnostics, null);
+            AddDiagnostic(context.Diagnostics, null);
             return;
         }
 
         if (msgValue != "Azure/module-maintainers")
         {
-            AddDiagnostic(diagnostics, msgValue);
+            AddDiagnostic(context.Diagnostics, msgValue);
         }
     }
 
