@@ -6,7 +6,7 @@ internal sealed class AnalyzeRule002 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM002";
 
-    public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM002 | Error
         // The 'description' metadata in the module should be the second metadata defined (without any decorators)

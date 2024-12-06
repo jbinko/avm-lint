@@ -5,7 +5,7 @@ internal sealed class AnalyzeRule003 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM003";
 
-    public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM003 | Error
         // The 'owner' metadata in the module should be the third metadata defined (without any decorators)

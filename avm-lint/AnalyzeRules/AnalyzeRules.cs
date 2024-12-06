@@ -52,7 +52,7 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         return string.Join(",", invalidRules.Select(v => $"'{v}'"));
     }
 
-    public List<IDiagnostic> Analyze(List<SyntaxBase> declarations)
+    public List<IDiagnostic> Analyze(IAnalyzeContext context, List<SyntaxBase> declarations)
     {
         var diagnostics = new List<IDiagnostic>();
 
@@ -60,7 +60,7 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         {
             if (rule.Execute)
             {
-                rule.Rule.Analyze(declarations, diagnostics);
+                rule.Rule.Analyze(context, declarations, diagnostics);
             }
         }
 

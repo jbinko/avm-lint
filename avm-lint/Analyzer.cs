@@ -19,7 +19,14 @@ internal sealed class Analyzer
             return parsingErrors;
 
         // Collect analyzing errors
-        var analyzingErrors = analyzeRules.Analyze(new LintVisitor().GetDeclarations(parser));
+        var analyzingErrors = analyzeRules.Analyze(
+            CreateContext(filePath),
+            new LintVisitor().GetDeclarations(parser));
         return analyzingErrors;
+    }
+
+    private static AnalyzeContext CreateContext(string filePath)
+    {
+        return new AnalyzeContext() { IsSubmodule = false };
     }
 }

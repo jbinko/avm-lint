@@ -5,7 +5,7 @@ internal sealed class AnalyzeRule004 : AnalyzeRuleBase, IAnalyzeRule
 {
     public string Code => "AVM004";
 
-    public void Analyze(List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
+    public void Analyze(IAnalyzeContext context, List<SyntaxBase> declarations, List<IDiagnostic> diagnostics)
     {
         // AVM004 | Error
         // The 'targetScope' (without any decorators) can only be used with 'subscription', 'managementGroup', or 'tenant' value.
