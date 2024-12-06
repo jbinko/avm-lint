@@ -101,24 +101,25 @@ internal sealed class Program
             if (issueThresholdReached)
                 break;
 
-            var findings = Analyzer.Analyze(filePath, analyzeRules);
-            if (findings.Count == 0)
+            var context = Analyzer.Analyze(filePath, analyzeRules);
+            var filePathMessage = CreateFilePathMessage(context);
+            if (context.Diagnostics.Count == 0)
             {
-                PrintMessage(Console.Out, filePath, ConsoleColor.Green);
+                PrintMessage(Console.Out, filePathMessage, ConsoleColor.Green);
             }
             else
             {
-                var errors = findings.Where(f => f.Level == DiagnosticLevel.Error);
+                var errors = context.Diagnostics.Where(f => f.Level == DiagnosticLevel.Error);
                 if (errors.Any())
                 {
-                    PrintMessage(Console.Out, filePath, ConsoleColor.Red);
+                    PrintMessage(Console.Out, filePathMessage, ConsoleColor.Red);
                 }
                 else
                 {
-                    PrintMessage(Console.Out, filePath, ConsoleColor.Yellow);
+                    PrintMessage(Console.Out, filePathMessage, ConsoleColor.Yellow);
                 }
 
-                foreach (var finding in findings)
+                foreach (var finding in context.Diagnostics)
                 {
                     var msg = $"{finding.Level}: {finding.Code} - {finding.Message}";
                     if (finding.Level == DiagnosticLevel.Error)
@@ -150,6 +151,23 @@ internal sealed class Program
         Console.WriteLine();
         Console.WriteLine($"Linting for {analyzeRules.ActiveRulesCount} active rule(s) out of {analyzeRules.TotalRulesCount} rules. Completed in {((DateTime.Now - start).TotalMilliseconds / 1000.0):0.##} seconds.");
         Console.WriteLine($"Found {errorCount} error(s), {warningCount} warning(s).");
+    }
+
+    private static string CreateFilePathMessage(IAnalyzeContext context)
+    {
+        switch(context.ModuleType)
+        {
+            case ModuleType.RootModule:
+                return $"{context.ModuleFilePath} - [Root Module]";
+            case ModuleType.SubModule:
+                return $"{context.ModuleFilePath} - [Sub Module]";
+            case ModuleType.TestModule:
+                return $"{context.ModuleFilePath} - [Test Module]";
+            case ModuleType.Dependencies:
+                return $"{context.ModuleFilePath} - [Dependencies]";
+        }
+
+        return $"{context.ModuleFilePath} - [Generic]";
     }
 
     private static void PrintMessage(TextWriter tw, string message, ConsoleColor color, string indent = "")
