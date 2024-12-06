@@ -1,5 +1,4 @@
 ﻿using Bicep.Core.Syntax;
-using Bicep.Core.Diagnostics;
 
 internal sealed class AnalyzeRules : IAnalyzeRules
 {
@@ -52,19 +51,15 @@ internal sealed class AnalyzeRules : IAnalyzeRules
         return string.Join(",", invalidRules.Select(v => $"'{v}'"));
     }
 
-    public List<IDiagnostic> Analyze(IAnalyzeContext context, List<SyntaxBase> declarations)
+    public void Analyze(IAnalyzeContext context)
     {
-        var diagnostics = new List<IDiagnostic>();
-
         foreach (var rule in _rules)
         {
             if (rule.Execute)
             {
-                rule.Rule.Analyze(context, declarations, diagnostics);
+                rule.Rule.Analyze(context);
             }
         }
-
-        return diagnostics;
     }
 
     public int TotalRulesCount => _rules.Count;

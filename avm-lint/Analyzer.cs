@@ -1,4 +1,5 @@
-﻿using Bicep.Core.Parsing;
+﻿using Bicep.Core.Syntax;
+using Bicep.Core.Parsing;
 using Bicep.Core.Diagnostics;
 
 internal sealed class Analyzer
@@ -19,14 +20,18 @@ internal sealed class Analyzer
             return parsingErrors;
 
         // Collect analyzing errors
-        var analyzingErrors = analyzeRules.Analyze(
-            CreateContext(filePath),
-            new LintVisitor().GetDeclarations(parser));
-        return analyzingErrors;
+        var context = CreateContext(filePath, new LintVisitor().GetDeclarations(parser));
+        analyzeRules.Analyze(context);
+        return context.Diagnostics;
     }
 
-    private static AnalyzeContext CreateContext(string filePath)
+    private static AnalyzeContext CreateContext(string filePath, List<SyntaxBase> declarations)
     {
-        return new AnalyzeContext() { IsSubmodule = false };
+        return new AnalyzeContext()
+        {
+            IsSubmodule = false,
+            Declarations = declarations,
+            Diagnostics = new List<IDiagnostic>(),
+        };
     }
 }
